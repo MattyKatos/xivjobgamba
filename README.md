@@ -4,6 +4,19 @@ A Dalamud plugin that spins a wheel of your saved Final Fantasy XIV gearsets and
 
 The wheel is drawn with ImGui: one colored slice per entry, labeled with the job abbreviation, a job icon when the slice is wide enough, a pointer fixed at the top, and a spin that eases out. Slice color comes from the job's role on the ClassJob sheet: tanks blue, healers green, melee red, physical ranged yellow, casters purple, crafters (Disciples of the Hand) grey, and gatherers (Disciples of the Land) dark grey. Two neighboring slices of the same role use different shades, and the label switches between light and dark text so it stays readable. A job that just landed and is now on cooldown is drawn desaturated.
 
+## Install
+
+Dalamud installs this plugin from the custom repository at:
+
+https://raw.githubusercontent.com/MattyKatos/sloppykatos/main/repo.json
+
+1. In game, run `/xlsettings`.
+2. Open **Experimental**.
+3. Add that URL under **Custom Plugin Repositories**.
+4. Run `/xlplugins` and install **XIV Job Gamba**.
+
+The catalog entry downloads `latest.zip` from this repository's GitHub Releases. The `v1.0.0` release is the first package those links expect. After a newer tag is published, the sloppykatos sync workflow updates the version and the download links.
+
 ## Commands
 
 | Command | What it does |
@@ -60,6 +73,19 @@ dotnet test
 `dotnet build` produces `XIVJobGamba/bin/x64/Debug/XIVJobGamba.dll`. The manifest `XIVJobGamba.json` is written next to the DLL. `dotnet build -c Release` writes the same pair under `XIVJobGamba/bin/x64/Release/`, plus `XIVJobGamba/bin/x64/Release/XIVJobGamba/latest.zip` containing the DLL and the manifest.
 
 `dotnet test` covers the cooldown window, the all-on-cooldown case, blacklist and crafter filtering, one-slice-per-job selection, and the wheel landing on the slice it was aimed at. It does not start the game.
+
+## Cutting a release
+
+Push a version tag. The tag is `v` plus `major.minor.patch`, for example `v1.0.0`.
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The release workflow runs on Windows, downloads the Dalamud reference assemblies, tests, and builds. It sets the assembly version from the tag (`v1.2.3` becomes `1.2.3.0`) and publishes `latest.zip` from DalamudPackager on the GitHub Release for that tag.
+
+The installable catalog lives in [sloppykatos](https://github.com/MattyKatos/sloppykatos). That repository reads the public GitHub API on a schedule, and its **Sync plugin repository** workflow can be run immediately. It rewrites `repo.json` from the latest release of each listed plugin. Both repositories are public, so that sync does not need a personal access token.
 
 ## Installing as a dev plugin
 
