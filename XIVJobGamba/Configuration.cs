@@ -23,6 +23,16 @@ internal sealed class Configuration : IPluginConfiguration
     public bool IncludeCraftersAndGatherers { get; set; } = true;
 
     /// <summary>
+    /// Points added when a duty entry follows exactly one spin on the job you enter as.
+    /// </summary>
+    public int PointsPerDuty { get; set; } = DutyPoints.DefaultPointsPerDuty;
+
+    /// <summary>
+    /// When true, chat also explains a duty entry that did not earn points.
+    /// </summary>
+    public bool ExplainMissedDutyPoints { get; set; }
+
+    /// <summary>
     /// Keys are "{gearset slot}:{exact name}". Renaming a set, or saving a
     /// different set into that slot, drops the exclusion.
     /// </summary>
@@ -46,6 +56,7 @@ internal sealed class Configuration : IPluginConfiguration
     public void Sanitize()
     {
         CooldownSpins = Math.Clamp(CooldownSpins, 0, SpinRules.MaxCooldown);
+        PointsPerDuty = Math.Clamp(PointsPerDuty, 0, DutyPoints.MaxPointsPerDuty);
         BlacklistKeys ??= [];
         RecentJobIds ??= [];
 
