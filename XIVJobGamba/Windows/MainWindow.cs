@@ -94,6 +94,7 @@ internal sealed class MainWindow : Window
 
         var plan = BuildPlan();
         DrawBanner();
+        DrawDutyPoints();
         DrawBlockReason(plan);
         DrawWheel(plan);
         DrawReadout(plan);
@@ -113,6 +114,24 @@ internal sealed class MainWindow : Window
             config.BlacklistKeys);
         var eligible = SpinRules.Eligible(selected, config.RecentJobIds, config.CooldownSpins);
         return new WheelPlan(catalog, selected, eligible);
+    }
+
+    private void DrawDutyPoints()
+    {
+        var score = plugin.Scores.Snapshot();
+        var pointWord = score.Points == 1 ? "point" : "points";
+        var spinWord = score.SpinsSinceDuty == 1 ? "spin" : "spins";
+        ImGui.Text($"Duty points: {score.Points} {pointWord}");
+        ImGui.Text($"Spins since last duty: {score.SpinsSinceDuty} {spinWord}");
+
+        if (score.SpinsSinceDuty == 1 && score.HasLandedJob)
+            ImGui.TextDisabled($"Eligible if you enter the next duty as {plugin.JobLabel(score.LandedJobId)}.");
+        else if (score.SpinsSinceDuty == 0)
+            ImGui.TextDisabled("Spin once, then enter a duty on that job.");
+        else
+            ImGui.TextDisabled("More than one spin. The next duty will not award points.");
+
+        ImGui.Spacing();
     }
 
     private void DrawBanner()

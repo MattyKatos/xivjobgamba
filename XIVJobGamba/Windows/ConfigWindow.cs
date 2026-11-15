@@ -67,6 +67,26 @@ internal sealed class ConfigWindow : Window
 
         ImGui.TextDisabled("Off: every gearset is an entry. On: highest item level gearset for that job.");
 
+        ImGui.Spacing();
+        ImGui.Separator();
+        var score = plugin.Scores.Snapshot();
+        ImGui.Text($"Duty points: {score.Points}");
+        ImGui.TextDisabled($"Spins since last duty: {score.SpinsSinceDuty}. Exactly one spin, then enter on that job.");
+
+        var pointsPerDuty = config.PointsPerDuty;
+        if (ImGui.SliderInt("Points per qualifying duty", ref pointsPerDuty, 0, DutyPoints.MaxPointsPerDuty))
+        {
+            config.PointsPerDuty = pointsPerDuty;
+            config.Save();
+        }
+
+        var explainMisses = config.ExplainMissedDutyPoints;
+        if (ImGui.Checkbox("Explain missed duty points in chat", ref explainMisses))
+        {
+            config.ExplainMissedDutyPoints = explainMisses;
+            config.Save();
+        }
+
         var includeCrafters = config.IncludeCraftersAndGatherers;
         if (ImGui.Checkbox("Include crafters and gatherers", ref includeCrafters))
         {

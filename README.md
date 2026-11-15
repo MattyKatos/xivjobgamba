@@ -47,6 +47,18 @@ History is the list of job ids from spins that actually equipped. If the game re
 
 If every remaining job is on cooldown, the wheel says so and the spin button stays disabled until you clear history, lower `X`, or wait until a job ages out. The same message covers the case where you have fewer distinct jobs than `X`.
 
+## Duty points
+
+Entering a duty scores the spins since the previous duty entry. The first window starts at plugin load, and the pending spin is kept across reloads.
+
+You get points only when that count is exactly one and your current job is the job the wheel landed on. A finished spin counts even if the game refuses the equip. Zero spins, two or more spins, or a different job scores nothing. The counter resets either way. The default award is 1 point, and settings can set it from 0 to 100. The wheel and settings both show the total and the spins since the last duty.
+
+A qualifying award is printed in chat. Missed awards stay quiet unless **Explain missed duty points in chat** is on.
+
+Points and the pending spin are in `duty-score.bin` in the plugin config directory, written with `BinaryWriter`. They are not in the JSON config. A missing or unreadable file starts the score at 0.
+
+Duty entry is `IClientState.TerritoryChanged` plus a `ContentFinderCondition` row for that territory. `IDutyState.DutyStarted` fires later, when the duty-commenced message appears, and it does not fire for a duty that was already in progress or after a disconnect. Another territory in the same duty does not score again. Leaving the duty does not reset the spin counter.
+
 ## Equipping
 
 When the wheel stops, the plugin calls `RaptureGearsetModule.EquipGearset(slot, 0)` on the framework thread. Passing `0` uses the glamour plate linked to that gearset, the same as equipping it by hand.

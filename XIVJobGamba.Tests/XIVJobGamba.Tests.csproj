@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\XIVJobGamba\DutyPoints.cs" Link="Linked\DutyPoints.cs" />
+    <Compile Include="..\XIVJobGamba\DutyScoreStore.cs" Link="Linked\DutyScoreStore.cs" />
     <Compile Include="..\XIVJobGamba\GearsetSnapshot.cs" Link="Linked\GearsetSnapshot.cs" />
     <Compile Include="..\XIVJobGamba\JobRoleClassifier.cs" Link="Linked\JobRoleClassifier.cs" />
     <Compile Include="..\XIVJobGamba\JobPalette.cs" Link="Linked\JobPalette.cs" />

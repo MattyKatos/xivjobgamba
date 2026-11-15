@@ -12,10 +12,14 @@ public sealed class Plugin : IDalamudPlugin
     private const string CommandName = "/gamba";
 
     private readonly ICommandManager commandManager;
+    private readonly IClientState clientState;
+    private readonly IPlayerState playerState;
     private readonly IFramework framework;
     private readonly IChatGui chat;
     private readonly IPluginLog log;
     private readonly GearsetService gearsets;
+    private readonly DutyEntryService dutyEntries;
+    private readonly DutyScoreStore scores;
     private readonly MainWindow mainWindow;
     private readonly ConfigWindow configWindow;
 
@@ -33,6 +37,8 @@ public sealed class Plugin : IDalamudPlugin
         IPluginLog log)
     {
         this.commandManager = commandManager;
+        this.clientState = clientState;
+        this.playerState = playerState;
         this.framework = framework;
         this.chat = chat;
         this.log = log;
@@ -42,6 +48,10 @@ public sealed class Plugin : IDalamudPlugin
         Configuration.Initialize(pluginInterface);
 
         gearsets = new GearsetService(clientState, playerState, objects, condition, data, log);
+        dutyEntries = new DutyEntryService(data, log);
+        scores = DutyScoreStore.Load(Path.Combine(pluginInterface.GetPluginConfigDirectory(), "duty-score.bin"));
+        if (scores.ResetBecauseUnreadable)
+            log.Warning("Duty score file was missing a readable header. Points and the pending spin started over at 0.");
         mainWindow = new MainWindow(this);
         configWindow = new ConfigWindow(this);
 
@@ -59,6 +69,7 @@ public sealed class Plugin : IDalamudPlugin
         pluginInterface.UiBuilder.OpenConfigUi += OpenSettings;
         pluginInterface.UiBuilder.OpenMainUi += OpenWheel;
         framework.Update += OnFramework;
+        clientState.TerritoryChanged += OnTerritoryChanged;
         framework.RunOnFrameworkThread(() =>
         {
             if (!disposed)
@@ -77,6 +88,8 @@ public sealed class Plugin : IDalamudPlugin
 
     internal GearsetService Gearsets => gearsets;
 
+    internal DutyScoreStore Scores => scores;
+
     private WindowSystem WindowSystem { get; }
 
     private bool disposed;
@@ -85,6 +98,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         disposed = true;
         framework.Update -= OnFramework;
+        clientState.TerritoryChanged -= OnTerritoryChanged;
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= OpenSettings;
         PluginInterface.UiBuilder.OpenMainUi -= OpenWheel;
@@ -138,6 +152,8 @@ public sealed class Plugin : IDalamudPlugin
         if (!mainWindow.TryDequeueEquip(out var entry))
             return;
 
+        scores.RecordSpin(entry.ClassJobId);
+
         try
         {
             var outcome = gearsets.TryEquip(entry.GearsetId);
@@ -162,5 +178,57 @@ public sealed class Plugin : IDalamudPlugin
             mainWindow.ShowOutcome(false, "Couldn't equip that gearset. See /xllog.");
             chat.PrintError("Couldn't equip that gearset. See /xllog.", "Job Gamba");
         }
+    }
+
+    private void OnTerritoryChanged(uint territoryId)
+    {
+        framework.RunOnFrameworkThread(() => HandleTerritory(territoryId));
+    }
+
+    private void HandleTerritory(uint territoryId)
+    {
+        if (disposed)
+            return;
+
+        if (!dutyEntries.TryGetContentId(territoryId, out var contentId))
+        {
+            scores.LeaveDuty();
+            return;
+        }
+
+        if (scores.CurrentDutyContentId == contentId)
+            return;
+
+        uint? currentJob = playerState.ClassJob.IsValid ? playerState.ClassJob.RowId : null;
+        var decision = scores.EnterDuty(currentJob, Configuration.PointsPerDuty, contentId);
+        AnnounceDutyPoints(decision);
+    }
+
+    private void AnnounceDutyPoints(DutyPointDecision decision)
+    {
+        if (decision.Awarded && decision.PointsAwarded > 0)
+        {
+            chat.Print(DutyPoints.Describe(decision, scores.Points, JobLabel(decision.LandedJobId), JobLabel(decision.CurrentJobId)), "Job Gamba");
+            return;
+        }
+
+        if (!Configuration.ExplainMissedDutyPoints && !(decision.Awarded && decision.PointsAwarded == 0))
+            return;
+
+        chat.Print(DutyPoints.Describe(decision, scores.Points, JobLabel(decision.LandedJobId), JobLabel(decision.CurrentJobId)), "Job Gamba");
+    }
+
+    internal string JobLabel(uint? classJobId)
+    {
+        if (classJobId is null)
+            return "an unknown job";
+
+        foreach (var gearset in gearsets.Current.Gearsets)
+        {
+            if (gearset.ClassJobId == classJobId.Value)
+                return $"{gearset.JobName} ({gearset.JobAbbreviation})";
+        }
+
+        return $"job {classJobId.Value}";
     }
 }
