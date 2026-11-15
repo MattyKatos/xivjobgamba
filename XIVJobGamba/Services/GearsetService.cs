@@ -176,7 +176,7 @@ internal sealed class GearsetService
 
             var name = CleanName(entries[i].NameString);
             var classJobId = (uint)entries[i].ClassJob;
-            ResolveJob(classJobId, out var abbreviation, out var jobName, out var jobType, out var crafter);
+            ResolveJob(classJobId, out var abbreviation, out var jobName, out var role, out var crafter);
 
             var icon = module->GetClassJobIconForGearset(i);
             var iconId = icon > 0 ? (uint)icon : 62100u + classJobId;
@@ -189,7 +189,7 @@ internal sealed class GearsetService
                 name,
                 entries[i].ItemLevel,
                 iconId,
-                jobType,
+                role,
                 crafter,
                 Configuration.BlacklistKey(i, name)));
         }
@@ -227,11 +227,11 @@ internal sealed class GearsetService
         return EquipOutcome.Ok();
     }
 
-    private void ResolveJob(uint classJobId, out string abbreviation, out string jobName, out byte jobType, out bool crafter)
+    private void ResolveJob(uint classJobId, out string abbreviation, out string jobName, out WheelRole role, out bool crafter)
     {
         abbreviation = classJobId == 0 ? "ADV" : classJobId.ToString();
         jobName = classJobId == 0 ? "Adventurer" : "Job " + classJobId;
-        jobType = 0;
+        role = WheelRole.Unknown;
         crafter = false;
 
         if (jobs == null || !jobs.TryGetRow(classJobId, out var row))
@@ -245,8 +245,51 @@ internal sealed class GearsetService
         if (!string.IsNullOrWhiteSpace(name))
             jobName = name;
 
-        jobType = row.JobType;
         crafter = row.DohDolJobIndex >= 0;
+        role = JobRoleClassifier.Classify(SignalsFor(row));
+    }
+
+    private JobRoleSignals SignalsFor(ClassJob row)
+    {
+        var hand = false;
+        var land = false;
+        var war = false;
+        var magic = false;
+
+        try
+        {
+            if (row.ClassJobCategory.IsValid)
+            {
+                var category = row.ClassJobCategory.Value;
+                // Membership columns on ClassJobCategory, not job row ids.
+                // Hand and land are exclusive on the discipline rows the job points at.
+                hand = category.CRP || category.BSM || category.ARM || category.GSM
+                    || category.LTW || category.WVR || category.ALC || category.CUL;
+                land = category.MIN || category.BTN || category.FSH;
+                war = category.GLA || category.PGL || category.MRD || category.LNC || category.ARC
+                    || category.PLD || category.MNK || category.WAR || category.DRG || category.BRD
+                    || category.ROG || category.NIN || category.MCH || category.DRK || category.SAM
+                    || category.GNB || category.DNC || category.RPR || category.VPR;
+                magic = category.CNJ || category.THM || category.WHM || category.BLM || category.ACN
+                    || category.SMN || category.SCH || category.AST || category.SGE || category.RDM
+                    || category.PCT || category.BLU;
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Warning(ex, "Couldn't read the ClassJobCategory row while coloring a slice.");
+        }
+
+        return new JobRoleSignals(
+            row.Role,
+            row.JobType,
+            row.DohDolJobIndex,
+            row.PrimaryStat,
+            row.UIPriority,
+            hand,
+            land,
+            war,
+            magic);
     }
 
     private static string CleanName(string? raw)

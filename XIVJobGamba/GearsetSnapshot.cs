@@ -11,6 +11,6 @@ internal sealed record GearsetSnapshot(
     string GearsetName,
     short ItemLevel,
     uint IconId,
-    byte JobType,
+    WheelRole Role,
     bool IsCrafterGatherer,
     string BlacklistKey);

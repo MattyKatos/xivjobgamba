@@ -2,7 +2,7 @@
 
 A Dalamud plugin that spins a wheel of your saved Final Fantasy XIV gearsets and equips the one it lands on.
 
-The wheel is drawn with ImGui: one colored slice per entry, labeled with the job abbreviation, a job icon when the slice is wide enough, a pointer fixed at the top, and a spin that eases out. Slices use the job's role color from the ClassJob sheet (tank, healer, melee, physical ranged, caster, barrier healer, or a warm fallback for crafters and gatherers).
+The wheel is drawn with ImGui: one colored slice per entry, labeled with the job abbreviation, a job icon when the slice is wide enough, a pointer fixed at the top, and a spin that eases out. Slice color comes from the job's role on the ClassJob sheet: tanks blue, healers green, melee red, physical ranged yellow, casters purple, crafters (Disciples of the Hand) grey, and gatherers (Disciples of the Land) dark grey. Two neighboring slices of the same role use different shades, and the label switches between light and dark text so it stays readable. A job that just landed and is now on cooldown is drawn desaturated.
 
 ## Commands
 
@@ -75,7 +75,7 @@ You only add the dev path once. After that, enable or disable the plugin from th
 Built against Dalamud `15.0.3` (API level 15, `Dalamud.NET.Sdk` 15.0.0) and the matching `FFXIVClientStructs` from the `latest` distrib.
 
 - Saved sets come from `RaptureGearsetModule.Instance()`, `Entries`, `IsValidGearset`, and `GearsetFlag.Exists`. The slot index passed to `EquipGearset` is the entry index. `CurrentGearsetIndex` is only used for the "equipped now" line.
-- Job names and abbreviations come from the Lumina `ClassJob` sheet (`Name`, `Abbreviation`, `JobType`). Crafters and gatherers are `DohDolJobIndex >= 0`.
+- Job names and abbreviations come from the Lumina `ClassJob` sheet. Slice role uses `JobType` when it is set (1 tank, 2 pure healer, 3 melee, 4 physical ranged, 5 magical ranged, 6 barrier healer). Base classes often leave `JobType` at 0, so those use `Role` (1 tank, 2 melee, 3 ranged, 4 healer). Ranged is split by the job's `ClassJobCategory`: Disciple of War is physical ranged, Disciple of Magic is magical ranged, with `PrimaryStat` (dexterity vs intelligence) if the category is mixed. Crafters and gatherers both have `DohDolJobIndex >= 0` and share index numbers, so Hand vs Land comes from that category row (hand columns vs miner/botanist/fisher). If the category row cannot be read, UI priority in the 100s is hand and the 200s is land. The "include crafters and gatherers" filter is still `DohDolJobIndex >= 0`.
 - Icons prefer `GetClassJobIconForGearset`. If that returns nothing, the icon id is `62100 + class job id`, which is the offset Dalamud's own sample uses. Icons are loaded with `ITextureProvider.TryGetFromGameIcon` and drawn upright on the slice.
 - Gearset reads and equips run on the framework thread. The UI keeps a managed copy and does not hold pointers across frames.
 - Plugin services are constructor-injected (`IDalamudPluginInterface`, commands, textures, client state, player state, object table, conditions, data, framework, chat, log). Config is `IPluginConfiguration` saved through `SavePluginConfig`.
