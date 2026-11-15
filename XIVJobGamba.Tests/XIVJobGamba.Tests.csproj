@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>XIVJobGamba.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\XIVJobGamba\GearsetSnapshot.cs" Link="Linked\GearsetSnapshot.cs" />
+    <Compile Include="..\XIVJobGamba\SpinRules.cs" Link="Linked\SpinRules.cs" />
+    <Compile Include="..\XIVJobGamba\WheelMath.cs" Link="Linked\WheelMath.cs" />
+    <Compile Include="..\XIVJobGamba\SpinAnimation.cs" Link="Linked\SpinAnimation.cs" />
+  </ItemGroup>
+</Project>

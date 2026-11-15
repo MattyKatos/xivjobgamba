@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Authors>MattyKatos</Authors>
+    <Author>MattyKatos</Author>
+    <Name>XIV Job Gamba</Name>
+    <Punchline>Spin a wheel and equip one of your saved gearsets.</Punchline>
+    <Description>Spin a wheel of your saved gearsets and equip the job it lands on. /gamba opens the wheel. /gamba config opens settings.</Description>
+    <RepoUrl>https://github.com/MattyKatos/xivjobgamba</RepoUrl>
+    <Tags>gearset;job;randomizer</Tags>
+    <CategoryTags>utility</CategoryTags>
+    <DalamudApiLevel>15</DalamudApiLevel>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- Not shipped in the current Dalamud distrib; job rows come from Lumina.Excel.Sheets. -->
+    <Use_Dalamud_Excel_Sheets>false</Use_Dalamud_Excel_Sheets>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="XIVJobGamba.json" />
+  </ItemGroup>
+</Project>
