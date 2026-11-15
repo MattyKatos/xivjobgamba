@@ -1,3 +1,5 @@
+THIS IS SLOP.
+
 # XIV Job Gamba
 
 A Dalamud plugin that spins a wheel of your saved Final Fantasy XIV gearsets and equips the one it lands on.
