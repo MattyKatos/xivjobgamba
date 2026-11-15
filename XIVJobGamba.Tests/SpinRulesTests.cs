@@ -150,5 +150,5 @@ public class SpinRulesTests
     }
 
     private static GearsetSnapshot Set(int id, uint job, short itemLevel, string name, bool crafter = false)
-        => new(id, job, "J" + job, "Job " + job, name, itemLevel, 62100 + job, 0, crafter, id + ":" + name);
+        => new(id, job, "J" + job, "Job " + job, name, itemLevel, 62100 + job, WheelRole.Unknown, crafter, id + ":" + name);
 }
