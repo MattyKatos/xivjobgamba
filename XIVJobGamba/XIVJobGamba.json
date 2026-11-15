@@ -1,0 +1,19 @@
+{
+  "Author": "MattyKatos",
+  "Name": "XIV Job Gamba",
+  "InternalName": "XIVJobGamba",
+  "AssemblyVersion": "1.0.0.0",
+  "Description": "Spin a wheel of your saved gearsets and equip the job it lands on.\n\n/gamba opens the wheel. /gamba config opens settings, where you can blacklist gearsets and set how many spins a job stays off the wheel.",
+  "Punchline": "Spin a wheel and equip one of your saved gearsets.",
+  "RepoUrl": "https://github.com/MattyKatos/xivjobgamba",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "Tags": [
+    "gearset",
+    "job",
+    "randomizer"
+  ],
+  "CategoryTags": [
+    "utility"
+  ]
+}
